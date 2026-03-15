@@ -33,3 +33,32 @@ final class EngineCommandTests: XCTestCase {
         )
     }
 }
+
+final class EngineScriptBuilderTests: XCTestCase {
+    func testBootstrapScriptUsesPairBasedSwingTimingInSequencer() {
+        let script = EngineScriptBuilder().bootstrapScript(
+            configuration: EngineBootstrapConfiguration(scsynthPort: 57_140)
+        )
+
+        XCTAssertTrue(script.contains("var swingRatio = swing.clip(50, 75) / 100;"))
+        XCTAssertTrue(script.contains("var pairDuration = stepDuration * 2;"))
+        XCTAssertTrue(script.contains("var swungStepDuration = pairDuration * swingRatio;"))
+        XCTAssertTrue(script.contains("var pairTrig = Impulse.kr((clampedTempo / 60) * 2);"))
+        XCTAssertTrue(script.contains("var stepTrig = pairTrig + DelayN.kr(pairTrig, 1.0, swungStepDuration);"))
+        XCTAssertFalse(script.contains("var stepTrig = Impulse.kr((clampedTempo / 60) * 4);"))
+    }
+
+    func testBootstrapScriptKeepsBootAndLiveSwingOnSameSequencerPath() {
+        let script = EngineScriptBuilder().bootstrapScript(
+            configuration: EngineBootstrapConfiguration(scsynthPort: 57_140)
+        )
+
+        XCTAssertTrue(script.contains("\\swing, (~r1010Swing ? 54).asFloat"))
+        XCTAssertTrue(script.contains("~r1010CommandSetSwing = { |swing, sentinel|"))
+        XCTAssertTrue(
+            script.contains(
+                "~r1010SequencerSynth.set(\\tempo, (~r1010Tempo ? 128).asFloat, \\swing, swing.asFloat);"
+            )
+        )
+    }
+}

@@ -16,6 +16,12 @@ Last updated: 2026-03-16
 - The sequencer now applies swing inside the SuperCollider timing path while preserving average tempo across each 16th-note pair.
 - Merged via PR #1 (`94b77f0` on `main`).
 
+### Follow-up
+
+- Status: Completed
+- Added focused regression coverage in `Tests/R1010Tests/EngineCommandTests.swift`.
+- The regression tests verify that `EngineScriptBuilder` keeps swing on the sequencer timing path, preserves pair-based timing math, and routes both boot-time and live `setSwing` updates through the same `\swing` transport path.
+
 ### Problem
 
 `swing` is exposed as a public transport parameter and is already wired through the app and runtime command path, but the actual sequencer timing remains straight. Users can change swing from the UI, and boot-time sync also sends swing, yet playback timing does not change.
