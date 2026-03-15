@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+
+# Xcode build products
+build/
+DerivedData/
+.build/
+
+# Xcode user-specific files
+xcuserdata/
+*.xcuserstate
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xccheckout
+*.xcscmblueprint
+
+# SwiftPM / Xcode package metadata
+.swiftpm/
+
+# Editors
+.idea/
+.vscode/
+*~
+*.swp
