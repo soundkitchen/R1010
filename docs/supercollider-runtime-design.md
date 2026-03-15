@@ -22,11 +22,12 @@
 - 起動失敗時は、未検出と runtime 初期化失敗でアラートを分けている
 - `scsynth` は空き UDP ポートを自動探索して起動する
 - `sclang` は bootstrap script を `.load` で読み込み、常駐ブリッジとして使う
-- `play` / `stop` / `setTempo` / `setSwing` / `setSteps` / `setVoiceEngine` / `setVoicePreset` / `setVoiceParams` / `previewVoice` は実装済み
+- `play` / `stop` / `setTempo` / `setSwing` / `setPatternPage` / `setSteps` / `setVoiceEngine` / `setVoicePreset` / `setVoiceParams` / `previewVoice` は実装済み
 - GUI は pattern bank を保持し、現在選択中の page だけを runtime へ同期する
+- 再生中の page / pattern / clear は、inactive step buffer bank へ全 voice snapshot を書いてから active bank を切り替える
 - `R1010_SKIP_RUNTIME_BOOT=1` で preview mode に入り、runtime を立ち上げずに UI を確認できる
 
-未実装の大きな項目は、`setPatternPage` の専用 command、queued pattern、accent / velocity、`current_step` telemetry の UI 利用です。
+未実装の大きな項目は、queued pattern、accent / velocity、`current_step` telemetry の UI 利用です。
 
 ## 設計原則
 
@@ -182,6 +183,7 @@ bootstrap は毎回の起動で再生成してよいです。出力先は `Appli
 
 - `setTempo`
 - `setSwing`
+- `setPatternPage`
 - `setSteps`
 - `play`
 - `stop`
@@ -192,13 +194,16 @@ bootstrap は毎回の起動で再生成してよいです。出力先は `Appli
 
 次は未実装です。
 
-- `setPatternPage`
 - `setVoiceMute`
 - `reloadSynthDefs`
 
 `SclangBridge` はこれを `sclang` 側の command handler に渡し、必要な buffer 更新やノード更新に変換します。
 
 `setVoicePreset` は、対象 voice の現在 parameter をその preset の初期値でまとめて更新するコマンドとして扱います。その後の微調整は `setVoiceParams` で反映します。
+
+`setPatternPage` は、選択中 page の全 voice step snapshot を 1 command で渡し、server 側では inactive bank に全 voice 分の buffer を書き込んでから sequencer synth の buffer 参照先を一括で切り替えます。これにより、再生中の page / pattern / clear で 1 tick だけ古い voice と新しい voice が混在する状態を避けます。
+
+`setSteps` は単一 voice の step 編集用 command として残し、現在 active な bank のみを更新します。page / pattern の切替時は、常に `setPatternPage` が全 voice snapshot を上書きする前提です。
 
 ## 音色モデル
 

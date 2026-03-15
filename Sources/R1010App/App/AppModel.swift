@@ -16,8 +16,8 @@ final class AppModel: ObservableObject {
 
     @Published private(set) var launchState: LaunchState = .idle
 
-    private let bootstrapCoordinator: AppBootstrapCoordinator
-    private let runtime: SuperColliderRuntime
+    private let bootstrapCoordinator: any AppBootstrapCoordinating
+    private let runtime: any RuntimeControlling
 
     private var isRuntimePreviewEnabled: Bool {
         let value = ProcessInfo.processInfo.environment[EnvironmentKey.skipRuntimeBoot]?
@@ -33,8 +33,8 @@ final class AppModel: ObservableObject {
     }
 
     init(
-        bootstrapCoordinator: AppBootstrapCoordinator = AppBootstrapCoordinator(),
-        runtime: SuperColliderRuntime = SuperColliderRuntime()
+        bootstrapCoordinator: any AppBootstrapCoordinating = AppBootstrapCoordinator(),
+        runtime: any RuntimeControlling = SuperColliderRuntime()
     ) {
         self.bootstrapCoordinator = bootstrapCoordinator
         self.runtime = runtime
@@ -134,6 +134,14 @@ final class AppModel: ObservableObject {
 
     func syncSteps(for voice: VoiceTrack) async {
         await send(.setSteps(voiceID: voice.id, steps: voice.steps))
+    }
+
+    func syncSelectedPatternPage(from stateStore: SequencerStateStore?) async {
+        guard let stateStore else {
+            return
+        }
+
+        await send(.setPatternPage(stateStore.currentPatternPageSnapshot))
     }
 
     func syncVoiceDefinition(_ voice: VoiceTrack) async {

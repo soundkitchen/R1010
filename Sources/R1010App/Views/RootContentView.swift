@@ -156,7 +156,7 @@ private struct SequencerPanel: View {
                         Button(pattern) {
                             sequencer.selectPattern(pattern)
                             Task {
-                                await appModel.syncProjectState(from: sequencer)
+                                await appModel.syncSelectedPatternPage(from: sequencer)
                             }
                         }
                     }
@@ -189,7 +189,7 @@ private struct SequencerPanel: View {
                         Button {
                             sequencer.selectPage(page)
                             Task {
-                                await appModel.syncProjectState(from: sequencer)
+                                await appModel.syncSelectedPatternPage(from: sequencer)
                             }
                         } label: {
                             Text("\(page)")
@@ -203,7 +203,7 @@ private struct SequencerPanel: View {
                     Button {
                         _ = sequencer.clearCurrentPage()
                         Task {
-                            await appModel.syncProjectState(from: sequencer)
+                            await appModel.syncSelectedPatternPage(from: sequencer)
                         }
                     } label: {
                         Text("clear")

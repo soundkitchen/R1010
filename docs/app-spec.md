@@ -15,6 +15,7 @@
 - `R1010 Preview` scheme では runtime を起動せず UI だけ確認できる
 - transport の `play / stop` は単一トグルで、`Space` キーでも切り替えられる
 - シーケンサーは `pattern` ごとに `page 1-4` を保持し、step 編集と `clear` ができる
+- 再生中の `pattern` / `page` / `clear` は、選択中 page の step snapshot を原子的に切り替える
 - voice editor では `engine` / `preset` / `tap` / 6 パラメータを操作できる
 - Settings は別ウィンドウで、`color mode` を `system / light / dark` から選べる
 
@@ -143,6 +144,7 @@
 
 - 初期パターンは `pattern A01`, `pattern A02`, `pattern A03`, `pattern B01`
 - `pattern` 切替と `page` 切替は、現在は量子化せず即時反映
+- 再生中の `pattern` 切替、`page` 切替、`clear` は、選択中 page の全 voice step snapshot を runtime へ 1 command で送り、server 側で buffer bank を切り替えて反映する
 - 再生エンジンが保持するのは選択中 page の step 状態
 - queued pattern / next pattern は未実装
 

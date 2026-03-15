@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 
 @MainActor
-final class AppBootstrapCoordinator {
+final class AppBootstrapCoordinator: AppBootstrapCoordinating {
     private let locator: SuperColliderLocator
     private let alertPresenter: DependencyAlertPresenter
 

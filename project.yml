@@ -23,7 +23,22 @@ targets:
         CODE_SIGNING_REQUIRED: NO
         DEVELOPMENT_TEAM: ""
     scheme:
-      testTargets: []
+      testTargets:
+        - R1010Tests
+  R1010Tests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Tests/R1010Tests
+    dependencies:
+      - target: R1010
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/R1010.app/Contents/MacOS/R1010"
+        BUNDLE_LOADER: "$(TEST_HOST)"
 schemes:
   R1010 Preview:
     build:

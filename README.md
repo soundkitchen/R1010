@@ -16,6 +16,7 @@ Current implementation includes:
 - Live `sclang` / `scsynth` runtime boot
 - A preview-only scheme that skips runtime boot
 - Pattern/page-based step sequencing
+- Atomic live resync for pattern/page/clear changes
 - Voice editor with `engine`, `preset`, `tap`, and sound parameters
 - Settings window with `color mode` selection
 
@@ -51,6 +52,12 @@ Preview-only build:
 
 ```bash
 xcodebuild -project R1010.xcodeproj -scheme 'R1010 Preview' -configuration Debug build CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO
+```
+
+Run tests:
+
+```bash
+xcodebuild -project R1010.xcodeproj -scheme R1010 -destination platform=macOS test CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO
 ```
 
 If you change `project.yml`, regenerate the project with:
