@@ -14,6 +14,7 @@
 - `sclang` / `scsynth` の live runtime 起動と bootstrap は実装済み
 - `R1010 Preview` scheme では runtime を起動せず UI だけ確認できる
 - transport の `play / stop` は単一トグルで、`Space` キーでも切り替えられる
+- boot 中に発行された `play / stop` は、runtime が ready になる直前に最終意図へ reconcile される
 - シーケンサーは `pattern` ごとに `page 1-4` を保持し、step 編集と `clear` ができる
 - 再生中の `pattern` / `page` / `clear` は、選択中 page の step snapshot を原子的に切り替える
 - voice editor では `engine` / `preset` / `tap` / 6 パラメータを操作できる
@@ -158,6 +159,8 @@ transport はグローバル操作として扱います。
   `play / stop` のキーボードショートカット
 - `bpm`
 - `swing`
+
+boot 中に `play / stop` が押された場合も、その時点の最終希望状態を保持し、起動時の初期 project sync 完了後に runtime transport へ反映します。
 
 `bpm` と `swing` は、どちらも個別のポップオーバーで編集します。一括編集パネルは採用しません。
 
