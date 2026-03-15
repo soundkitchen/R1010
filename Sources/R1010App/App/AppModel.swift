@@ -98,6 +98,7 @@ final class AppModel: ObservableObject {
 
             let session = try await runtime.start(with: paths)
             try await syncProjectStateDuringBoot(from: initialState)
+            try await reconcileTransportDuringBoot(from: initialState)
             launchState = .ready(session)
         } catch {
             bootstrapCoordinator.handleLaunchFailure(error)
@@ -181,6 +182,20 @@ final class AppModel: ObservableObject {
             try await runtime.send(.setVoiceEngine(voiceID: track.id, engine: track.engine.rawValue))
             try await runtime.send(.setVoicePreset(voiceID: track.id, presetID: track.presetID))
             try await runtime.send(.setVoiceParams(voiceID: track.id, parameters: track.parameters))
+        }
+    }
+
+    private func reconcileTransportDuringBoot(from stateStore: SequencerStateStore?) async throws {
+        guard let stateStore else {
+            return
+        }
+
+        var appliedIsPlaying = false
+
+        while appliedIsPlaying != stateStore.isPlaying {
+            let desiredIsPlaying = stateStore.isPlaying
+            try await runtime.send(desiredIsPlaying ? .play : .stop)
+            appliedIsPlaying = desiredIsPlaying
         }
     }
 

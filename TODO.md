@@ -148,8 +148,14 @@ This is not a Swift threading bug. The problem is that the runtime state is obse
 ## P3. Preserve play intent issued before runtime becomes ready
 
 - Priority: P3
-- Status: Open
+- Status: Completed
 - Area: Boot-time transport state reconciliation
+
+### Resolution
+
+- Fixed in `Sources/R1010App/App/AppModel.swift` and `Tests/R1010Tests/AppModelTests.swift`.
+- `bootstrapIfNeeded(initialState:)` now reconciles the final desired transport state from `SequencerStateStore.isPlaying` before exposing the runtime as ready.
+- Added regression tests covering `Play during boot` and `Play -> Stop during boot`.
 
 ### Problem
 
