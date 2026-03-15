@@ -27,7 +27,7 @@ struct RuntimeSession: Equatable {
 }
 
 @MainActor
-final class SuperColliderRuntime {
+final class SuperColliderRuntime: RuntimeControlling {
     private let preferredPorts = Array(57140...57148)
     private let fallbackPortRange = 57149...57520
 

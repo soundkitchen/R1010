@@ -39,7 +39,8 @@ struct EngineScriptBuilder {
         ];
         ~r1010VoiceState = IdentityDictionary.new;
         ~r1010StepState = IdentityDictionary.new;
-        ~r1010StepBuffers = IdentityDictionary.new;
+        ~r1010StepBuffers = [IdentityDictionary.new, IdentityDictionary.new];
+        ~r1010ActiveStepBankIndex = 0;
         ~r1010SequencerSynth = nil;
         ~r1010RootGroup = nil;
 
@@ -70,17 +71,57 @@ struct EngineScriptBuilder {
             steps
         };
 
+        ~r1010StepBufferBank = { |bankIndex|
+            ~r1010StepBuffers[bankIndex.clip(0, 1).asInteger] ? IdentityDictionary.new
+        };
+
+        ~r1010ActiveStepBufferBank = {
+            ~r1010StepBufferBank.((~r1010ActiveStepBankIndex ? 0).asInteger)
+        };
+
+        ~r1010InactiveStepBankIndex = {
+            var current = (~r1010ActiveStepBankIndex ? 0).asInteger;
+            (current == 0).if({ 1 }, { 0 })
+        };
+
+        ~r1010BuildStepBufferArgs = { |bankIndex|
+            var args = List.new;
+            var bank = ~r1010StepBufferBank.(bankIndex);
+
+            ~r1010VoiceOrder.do { |voiceID|
+                var prefix = ~r1010VoicePrefixes[voiceID];
+                var buffer = bank[voiceID];
+                args.addAll([
+                    (prefix ++ "Buf").asSymbol, buffer.bufnum
+                ]);
+            };
+
+            args.asArray
+        };
+
+        ~r1010ActivateStepBufferBank = { |bankIndex|
+            var resolvedIndex = bankIndex.clip(0, 1).asInteger;
+            var synth = ~r1010SequencerSynth;
+            var args = ~r1010BuildStepBufferArgs.(resolvedIndex);
+
+            synth.notNil.if({
+                synth.performList(\\set, args);
+            });
+            ~r1010ActiveStepBankIndex = resolvedIndex;
+        };
+
         ~r1010BuildSequencerArgs = {
             var args = List.newFrom([
                 \\tempo, (~r1010Tempo ? 128).asFloat,
                 \\swing, (~r1010Swing ? 54).asFloat
             ]);
+            var activeBank = ~r1010ActiveStepBufferBank.();
 
             ~r1010VoiceOrder.do { |voiceID|
                 var prefix = ~r1010VoicePrefixes[voiceID];
                 var state = ~r1010EnsureVoiceState.(voiceID);
                 var engineMap = ~r1010EngineMaps[voiceID] ? Dictionary.new;
-                var buffer = ~r1010StepBuffers[voiceID];
+                var buffer = activeBank[voiceID];
 
                 args.addAll([
                     (prefix ++ "Buf").asSymbol, buffer.bufnum,
@@ -191,11 +232,31 @@ struct EngineScriptBuilder {
 
         ~r1010CommandSetSteps = { |voiceID, steps, sentinel|
             ~r1010RunServerCommand.({
+                var activeBank = ~r1010ActiveStepBufferBank.();
                 ~r1010StepState = ~r1010StepState ? IdentityDictionary.new;
                 ~r1010StepState[voiceID] = steps;
-                (~r1010StepBuffers.notNil and: { ~r1010StepBuffers[voiceID].notNil }).if({
-                    ~r1010StepBuffers[voiceID].setn(0, steps);
+                (activeBank.notNil and: { activeBank[voiceID].notNil }).if({
+                    activeBank[voiceID].setn(0, steps);
                 });
+            }, sentinel);
+        };
+
+        ~r1010CommandSetPatternPage = { |voiceSteps, sentinel|
+            ~r1010RunServerCommand.({
+                var targetBankIndex = ~r1010InactiveStepBankIndex.();
+                var targetBank = ~r1010StepBufferBank.(targetBankIndex);
+
+                ~r1010StepState = ~r1010StepState ? IdentityDictionary.new;
+                voiceSteps.do { |voiceEntry|
+                    var voiceID = voiceEntry[0];
+                    var steps = voiceEntry[1];
+                    ~r1010StepState[voiceID] = steps;
+                    (targetBank.notNil and: { targetBank[voiceID].notNil }).if({
+                        targetBank[voiceID].setn(0, steps);
+                    });
+                };
+
+                (~r1010ActivateStepBufferBank ? { }).value(targetBankIndex);
             }, sentinel);
         };
 
@@ -441,12 +502,15 @@ struct EngineScriptBuilder {
         ~r1010VoiceOrder.do { |voiceID|
             ~r1010EnsureVoiceState.(voiceID);
             ~r1010EnsureStepData.(voiceID);
-            ~r1010StepBuffers[voiceID] = Buffer.alloc(~r1010Server, 16, 1);
+            ~r1010StepBuffers[0][voiceID] = Buffer.alloc(~r1010Server, 16, 1);
+            ~r1010StepBuffers[1][voiceID] = Buffer.alloc(~r1010Server, 16, 1);
         };
 
         ~r1010Server.sync;
         ~r1010VoiceOrder.do { |voiceID|
-            ~r1010StepBuffers[voiceID].setn(0, ~r1010StepState[voiceID]);
+            var steps = ~r1010StepState[voiceID];
+            ~r1010StepBuffers[0][voiceID].setn(0, steps);
+            ~r1010StepBuffers[1][voiceID].setn(0, steps);
         };
         ~r1010Server.sync;
         "R1010_BOOTSTRAP_READY".postln;

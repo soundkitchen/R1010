@@ -41,6 +41,10 @@ final class SequencerStateStore: ObservableObject {
         tracks.first(where: { $0.id == selectedVoiceID })
     }
 
+    var currentPatternPageSnapshot: PatternPageSnapshot {
+        PatternPageSnapshot(tracks: tracks)
+    }
+
     func selectVoice(_ id: String) {
         selectedVoiceID = id
     }

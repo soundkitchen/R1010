@@ -1,10 +1,11 @@
 import Foundation
 
-enum EngineCommand {
+enum EngineCommand: Equatable {
     case play
     case stop
     case setTempo(Int)
     case setSwing(Int)
+    case setPatternPage(PatternPageSnapshot)
     case setSteps(voiceID: String, steps: [Bool])
     case setVoiceEngine(voiceID: String, engine: String)
     case setVoicePreset(voiceID: String, presetID: String)
@@ -21,6 +22,8 @@ enum EngineCommand {
             return "~r1010CommandSetTempo.value(\(bpm), \(quotedString(sentinel)));"
         case .setSwing(let swing):
             return "~r1010CommandSetSwing.value(\(swing), \(quotedString(sentinel)));"
+        case .setPatternPage(let snapshot):
+            return "~r1010CommandSetPatternPage.value(\(patternPageSnapshotLiteral(snapshot)), \(quotedString(sentinel)));"
         case .setSteps(let voiceID, let steps):
             return "~r1010CommandSetSteps.value(\(quotedSymbol(voiceID)), \(stepArrayLiteral(steps)), \(quotedString(sentinel)));"
         case .setVoiceEngine(let voiceID, let engine):
@@ -48,5 +51,12 @@ enum EngineCommand {
     private func stepArrayLiteral(_ steps: [Bool]) -> String {
         let values = steps.map { $0 ? "1.0" : "0.0" }.joined(separator: ", ")
         return "[\(values)]"
+    }
+
+    private func patternPageSnapshotLiteral(_ snapshot: PatternPageSnapshot) -> String {
+        let voices = snapshot.voices.map { voice in
+            "[\(quotedSymbol(voice.voiceID)), \(stepArrayLiteral(voice.steps))]"
+        }.joined(separator: ", ")
+        return "[\(voices)]"
     }
 }
