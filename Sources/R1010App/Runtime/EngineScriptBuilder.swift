@@ -337,7 +337,15 @@ struct EngineScriptBuilder {
                 clapAttack = 0.009, clapDecay = 0.24, clapTune = 0, clapLowPass = 8600, clapResonance = 0.40, clapDrive = 0.18,
                 closedHatAttack = 0.001, closedHatDecay = 0.12, closedHatTune = 1, closedHatLowPass = 10800, closedHatResonance = 0.18, closedHatDrive = 0.10,
                 openHatAttack = 0.001, openHatDecay = 0.52, openHatTune = -2, openHatLowPass = 10800, openHatResonance = 0.18, openHatDrive = 0.10|
-                var stepTrig = Impulse.kr((tempo.clip(30, 220) / 60) * 4);
+                var clampedTempo = tempo.clip(30, 220);
+                var swingRatio = swing.clip(50, 75) / 100;
+                var stepDuration = 60 / clampedTempo / 4;
+                var pairDuration = stepDuration * 2;
+                var swungStepDuration = pairDuration * swingRatio;
+                // Keep each 16th-note pair at a constant length while delaying the second step.
+                // `1.0` seconds safely covers the current 30 BPM / 75% swing maximum delay.
+                var pairTrig = Impulse.kr((clampedTempo / 60) * 2);
+                var stepTrig = pairTrig + DelayN.kr(pairTrig, 1.0, swungStepDuration);
                 var stepIndex = Stepper.kr(stepTrig, 0, 0, 15, 1, 15);
                 var readGate = { |buffer|
                     BufRd.kr(1, buffer, stepIndex, interpolation: 0, loop: 1) > 0.5
