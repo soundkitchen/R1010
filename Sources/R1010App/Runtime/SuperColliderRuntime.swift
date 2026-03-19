@@ -237,10 +237,26 @@ final class SuperColliderRuntime: RuntimeControlling {
         }
 
         switch error {
-        case MonitoredProcess.ProcessError.terminated(_, _, let recentLines),
-             MonitoredProcess.ProcessError.timeout(_, _, let recentLines):
+        case MonitoredProcess.ProcessError.terminated(let label, let status, let recentLines):
+            guard label == "scsynth" else {
+                return false
+            }
+
+            let joined = recentLines.joined(separator: "\n")
+            return status == 5
+                || joined.localizedCaseInsensitiveContains("number of devices:")
+                || joined.localizedCaseInsensitiveContains("could not initialize audio")
+                || joined.localizedCaseInsensitiveContains("SC_AudioDriver:")
+                || joined.localizedCaseInsensitiveContains("Input Device")
+                || joined.localizedCaseInsensitiveContains("Output Device")
+        case MonitoredProcess.ProcessError.timeout(let label, _, let recentLines):
+            guard label == "scsynth" else {
+                return false
+            }
+
             let joined = recentLines.joined(separator: "\n")
             return joined.localizedCaseInsensitiveContains("could not initialize audio")
+                || joined.localizedCaseInsensitiveContains("number of devices:")
                 || joined.localizedCaseInsensitiveContains("SC_AudioDriver:")
                 || joined.localizedCaseInsensitiveContains("Input Device")
                 || joined.localizedCaseInsensitiveContains("Output Device")
