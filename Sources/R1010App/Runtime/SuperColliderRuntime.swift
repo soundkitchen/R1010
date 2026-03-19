@@ -200,16 +200,25 @@ final class SuperColliderRuntime: RuntimeControlling {
     ) -> [[String]] {
         let inputMutedArguments = ["-u", "\(port)", "-i", "0", "-I", "0", "-o", "2", "-R", "0"]
         let fallbackArguments = ["-u", "\(port)", "-i", "0", "-o", "2", "-R", "0"]
+        let hardwareDeviceArguments = outputConfiguration.map { ["-H", $0.deviceName] } ?? []
         let sampleRateArguments = outputConfiguration.map { ["-S", "\($0.roundedSampleRate)"] } ?? []
         var profiles = [
-            inputMutedArguments + sampleRateArguments,
-            fallbackArguments + sampleRateArguments
+            inputMutedArguments + hardwareDeviceArguments + sampleRateArguments,
+            fallbackArguments + hardwareDeviceArguments + sampleRateArguments
         ]
 
-        if !sampleRateArguments.isEmpty {
-            profiles.append(inputMutedArguments)
-            profiles.append(fallbackArguments)
+        if !hardwareDeviceArguments.isEmpty {
+            profiles.append(inputMutedArguments + hardwareDeviceArguments)
+            profiles.append(fallbackArguments + hardwareDeviceArguments)
         }
+
+        if !sampleRateArguments.isEmpty {
+            profiles.append(inputMutedArguments + sampleRateArguments)
+            profiles.append(fallbackArguments + sampleRateArguments)
+        }
+
+        profiles.append(inputMutedArguments)
+        profiles.append(fallbackArguments)
 
         return profiles
     }
