@@ -12,6 +12,7 @@
 
 - SuperCollider 依存の自動探索と起動失敗時アラートは実装済み
 - `sclang` / `scsynth` の live runtime 起動と bootstrap は実装済み
+- `scsynth` 起動時は macOS の既定出力デバイスの nominal sample rate を解決し、hardware sample rate として明示する
 - `R1010 Preview` scheme では runtime を起動せず UI だけ確認できる
 - transport の `play / stop` は単一トグルで、`Space` キーでも切り替えられる
 - boot 中に発行された `play / stop` は、runtime が ready になる直前に最終意図へ reconcile される

@@ -71,6 +71,7 @@ final class SuperColliderRuntime: RuntimeControlling {
         }
 
         let runtimeDirectory = try prepareRuntimeDirectory()
+        let defaultAudioOutput = DefaultAudioOutputConfiguration.current()
         var lastError: Error?
 
         for port in candidatePorts() {
@@ -79,7 +80,7 @@ final class SuperColliderRuntime: RuntimeControlling {
                 configuration: configuration,
                 to: runtimeDirectory
             )
-            for arguments in scsynthArgumentProfiles(for: port) {
+            for arguments in scsynthArgumentProfiles(for: port, outputConfiguration: defaultAudioOutput) {
                 let scsynth = MonitoredProcess(label: "scsynth")
                 let sclang = MonitoredProcess(label: "sclang")
 
@@ -193,11 +194,24 @@ final class SuperColliderRuntime: RuntimeControlling {
         }
     }
 
-    private func scsynthArgumentProfiles(for port: Int) -> [[String]] {
-        [
-            ["-u", "\(port)", "-i", "0", "-I", "0", "-o", "2", "-R", "0"],
-            ["-u", "\(port)", "-i", "0", "-o", "2", "-R", "0"]
+    private func scsynthArgumentProfiles(
+        for port: Int,
+        outputConfiguration: DefaultAudioOutputConfiguration?
+    ) -> [[String]] {
+        let inputMutedArguments = ["-u", "\(port)", "-i", "0", "-I", "0", "-o", "2", "-R", "0"]
+        let fallbackArguments = ["-u", "\(port)", "-i", "0", "-o", "2", "-R", "0"]
+        let sampleRateArguments = outputConfiguration.map { ["-S", "\($0.roundedSampleRate)"] } ?? []
+        var profiles = [
+            inputMutedArguments + sampleRateArguments,
+            fallbackArguments + sampleRateArguments
         ]
+
+        if !sampleRateArguments.isEmpty {
+            profiles.append(inputMutedArguments)
+            profiles.append(fallbackArguments)
+        }
+
+        return profiles
     }
 
     private func candidatePorts() -> [Int] {
