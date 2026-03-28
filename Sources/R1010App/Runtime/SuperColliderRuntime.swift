@@ -71,6 +71,7 @@ final class SuperColliderRuntime: RuntimeControlling {
         }
 
         let runtimeDirectory = try prepareRuntimeDirectory()
+        let defaultAudioOutput = DefaultAudioOutputConfiguration.current()
         var lastError: Error?
 
         for port in candidatePorts() {
@@ -79,7 +80,7 @@ final class SuperColliderRuntime: RuntimeControlling {
                 configuration: configuration,
                 to: runtimeDirectory
             )
-            for arguments in scsynthArgumentProfiles(for: port) {
+            for arguments in scsynthArgumentProfiles(for: port, outputConfiguration: defaultAudioOutput) {
                 let scsynth = MonitoredProcess(label: "scsynth")
                 let sclang = MonitoredProcess(label: "sclang")
 
@@ -193,11 +194,33 @@ final class SuperColliderRuntime: RuntimeControlling {
         }
     }
 
-    private func scsynthArgumentProfiles(for port: Int) -> [[String]] {
-        [
-            ["-u", "\(port)", "-i", "0", "-I", "0", "-o", "2", "-R", "0"],
-            ["-u", "\(port)", "-i", "0", "-o", "2", "-R", "0"]
+    private func scsynthArgumentProfiles(
+        for port: Int,
+        outputConfiguration: DefaultAudioOutputConfiguration?
+    ) -> [[String]] {
+        let inputMutedArguments = ["-u", "\(port)", "-i", "0", "-I", "0", "-o", "2", "-R", "0"]
+        let fallbackArguments = ["-u", "\(port)", "-i", "0", "-o", "2", "-R", "0"]
+        let hardwareDeviceArguments = outputConfiguration.map { ["-H", $0.deviceName] } ?? []
+        let sampleRateArguments = outputConfiguration.map { ["-S", "\($0.roundedSampleRate)"] } ?? []
+        var profiles = [
+            inputMutedArguments + hardwareDeviceArguments + sampleRateArguments,
+            fallbackArguments + hardwareDeviceArguments + sampleRateArguments
         ]
+
+        if !hardwareDeviceArguments.isEmpty {
+            profiles.append(inputMutedArguments + hardwareDeviceArguments)
+            profiles.append(fallbackArguments + hardwareDeviceArguments)
+        }
+
+        if !sampleRateArguments.isEmpty {
+            profiles.append(inputMutedArguments + sampleRateArguments)
+            profiles.append(fallbackArguments + sampleRateArguments)
+        }
+
+        profiles.append(inputMutedArguments)
+        profiles.append(fallbackArguments)
+
+        return profiles
     }
 
     private func candidatePorts() -> [Int] {
@@ -223,10 +246,26 @@ final class SuperColliderRuntime: RuntimeControlling {
         }
 
         switch error {
-        case MonitoredProcess.ProcessError.terminated(_, _, let recentLines),
-             MonitoredProcess.ProcessError.timeout(_, _, let recentLines):
+        case MonitoredProcess.ProcessError.terminated(let label, let status, let recentLines):
+            guard label == "scsynth" else {
+                return false
+            }
+
+            let joined = recentLines.joined(separator: "\n")
+            return status == 5
+                || joined.localizedCaseInsensitiveContains("number of devices:")
+                || joined.localizedCaseInsensitiveContains("could not initialize audio")
+                || joined.localizedCaseInsensitiveContains("SC_AudioDriver:")
+                || joined.localizedCaseInsensitiveContains("Input Device")
+                || joined.localizedCaseInsensitiveContains("Output Device")
+        case MonitoredProcess.ProcessError.timeout(let label, _, let recentLines):
+            guard label == "scsynth" else {
+                return false
+            }
+
             let joined = recentLines.joined(separator: "\n")
             return joined.localizedCaseInsensitiveContains("could not initialize audio")
+                || joined.localizedCaseInsensitiveContains("number of devices:")
                 || joined.localizedCaseInsensitiveContains("SC_AudioDriver:")
                 || joined.localizedCaseInsensitiveContains("Input Device")
                 || joined.localizedCaseInsensitiveContains("Output Device")

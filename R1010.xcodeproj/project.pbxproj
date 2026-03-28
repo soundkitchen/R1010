@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01BA13A3E15EFBE69C162ADD /* DefaultAudioOutputConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC93EEDEA3549F651122C14A /* DefaultAudioOutputConfiguration.swift */; };
 		0299D90F4093B82A8B13036B /* EngineCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A68DD09F93D448C4ABACF01 /* EngineCommand.swift */; };
 		0435CBF0A3125247A8EE705A /* SuperColliderRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B31A2549970322DBC827D0 /* SuperColliderRuntime.swift */; };
 		104BFDDB4BCD104EC5ED8F62 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62EBA1375784DB53F670ADF4 /* SettingsView.swift */; };
@@ -58,6 +59,7 @@
 		99892759EB086B7C72EA645F /* R1010Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = R1010Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE71A593DE11469D6AFAFB8 /* AppBootstrapCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBootstrapCoordinator.swift; sourceTree = "<group>"; };
 		A22561F58D80539960F51D4C /* DependencyAlertPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependencyAlertPresenter.swift; sourceTree = "<group>"; };
+		BC93EEDEA3549F651122C14A /* DefaultAudioOutputConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultAudioOutputConfiguration.swift; sourceTree = "<group>"; };
 		BE58A0D7F49220FB71CC4F87 /* EngineScriptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineScriptBuilder.swift; sourceTree = "<group>"; };
 		C76AD80EFC4B91D95AB01F0B /* SuperColliderLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuperColliderLocator.swift; sourceTree = "<group>"; };
 		CAB7CC4A31A63CA33C270F60 /* SequencerStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SequencerStateStore.swift; sourceTree = "<group>"; };
@@ -147,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				9EE71A593DE11469D6AFAFB8 /* AppBootstrapCoordinator.swift */,
+				BC93EEDEA3549F651122C14A /* DefaultAudioOutputConfiguration.swift */,
 				A22561F58D80539960F51D4C /* DependencyAlertPresenter.swift */,
 				7A68DD09F93D448C4ABACF01 /* EngineCommand.swift */,
 				BE58A0D7F49220FB71CC4F87 /* EngineScriptBuilder.swift */,
@@ -260,6 +263,7 @@
 				EBFA9FEC582BCFCBD5A8DB84 /* AppBootstrapCoordinator.swift in Sources */,
 				D5FAB47F7A6EC2126F77AB20 /* AppModel.swift in Sources */,
 				ED0F9E2AAEB1395A02424BDE /* AppModelDependencies.swift in Sources */,
+				01BA13A3E15EFBE69C162ADD /* DefaultAudioOutputConfiguration.swift in Sources */,
 				347D097F58937367DF9B121A /* DependencyAlertPresenter.swift in Sources */,
 				0299D90F4093B82A8B13036B /* EngineCommand.swift in Sources */,
 				57FA71C5E401FC9C1EAC2A2C /* EngineScriptBuilder.swift in Sources */,
